@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: storage-service
+  datasource:
+    url: ${STORAGE_DB_URL}
+    username: ${STORAGE_DB_USERNAME}
+    password: ${STORAGE_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+          jwk-set-uri: ${KEYCLOAK_ISSUER_URI}/protocol/openid-connect/certs
+  servlet:
+    multipart:
+      max-file-size: 1024MB
+      max-request-size: 1024MB
+
+server:
+  port: 8088
+  servlet:
+    context-path: /storage
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /api-docs
+
+open:
+  api:
+    title: Storage service
+    version: 1.0.0
+    description: Storage service API
+    serverUrl: http://localhost:${server.port}${server.servlet.context-path}
+    serverName: storage service
+
+app:
+  storage:
+    backend: local
+    download-url-prefix: http://localhost:${server.port}${server.servlet.context-path}
+    local:
+      base-dir: /data/storage/files
