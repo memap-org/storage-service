@@ -19,4 +19,8 @@ public class FileUploadRequest {
    * If not provided, the original filename will be used.
    */
   String customName;
+
+  String roadmapId;
+
+  String roadmapAssetType;
 }

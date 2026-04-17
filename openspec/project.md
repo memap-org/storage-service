@@ -5,7 +5,7 @@
 **MeMap Storage Service** - A microservice for centralized file storage in the MeMap educational platform. The service provides:
 
 - File upload and storage with local filesystem backend
-- File metadata management using MySQL database
+- File metadata management using MongoDB database
 - File download and retrieval APIs
 - Secure file access with JWT authentication
 - Support for multiple storage backends (local, future: MinIO/S3)
@@ -16,10 +16,10 @@ This service is intended to be the single source of truth for file operations ac
 
 - **Language**: Java 21
 - **Framework**: Spring Boot 3.5.10
-- **Database**: MySQL (relational database for metadata)
+- **Database**: MongoDB (document database for metadata)
 - **Authentication**: OAuth2/JWT with Keycloak as identity provider
 - **API Documentation**: SpringDoc OpenAPI (Swagger UI)
-- **ORM**: Spring Data JPA with Hibernate
+- **Data Access**: Spring Data MongoDB
 - **Validation**: Spring Boot Starter Validation
 - **Build Tool**: Maven
 - **Containerization**: Docker
@@ -32,11 +32,11 @@ This service is intended to be the single source of truth for file operations ac
 - **Field Access Level**: Use `@FieldDefaults(level = AccessLevel.PRIVATE)` for private fields by default
 - **Builder Defaults**: Use `@Builder.Default` for fields with default values
 - **Package Structure**:
-  - `entity/` - JPA entities (MySQL tables)
+  - `entity/` - MongoDB documents
   - `dto/` - Data Transfer Objects (requests/responses)
   - `controller/` - REST controllers
   - `service/` - Service interfaces and implementations
-  - `repository/` - JPA repositories
+  - `repository/` - MongoDB repositories
   - `exception/` - Custom exceptions and error codes
   - `config/` - Configuration classes
   - `config/security/` - Security configuration
@@ -45,7 +45,7 @@ This service is intended to be the single source of truth for file operations ac
 
 ### Naming Conventions
 
-- **Entities**: PascalCase matching table name (e.g., `FileMetadata`, `StorageQuota`)
+- **Entities**: PascalCase matching collection name (e.g., `FileMetadata`, `StorageQuota`)
 - **Controllers**: Suffix with `Controller` (e.g., `FileController`)
 - **Services**: Interface prefixed with `I`, implementation suffixed with `Impl` or in same package
 - **DTOs**: Descriptive names (e.g., `FileUploadRequest`, `FileResponse`)
@@ -84,12 +84,12 @@ This service is intended to be the single source of truth for file operations ac
 - **JWT Authentication Required**: All endpoints require valid JWT token (except public endpoints and Swagger)
 - **File Size Limit**: Max 1024MB for file uploads (configurable)
 - **REST Port**: REST API on port 8088 with context path `/storage`
-- **MySQL Database**: Relational database for metadata storage
+- **MongoDB Database**: Document database for metadata storage
 - **Local Storage**: Default storage backend at `/data/storage/files`
 - **Keycloak Integration**: Uses Keycloak realm roles (TEACHER, STUDENT, ADMIN)
 
 ## External Dependencies
 
 - **Keycloak**: Identity provider for OAuth2/JWT authentication
-- **MySQL**: Database for file metadata storage
+- **MongoDB**: Database for file metadata storage
 - **Other MeMap Services**: Roadmap-service, learning-service, profile-service may call storage-service for file operations

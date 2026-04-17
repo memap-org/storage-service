@@ -1,19 +1,20 @@
 package com.memap.storage.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "file_metadata", indexes = {
-    @Index(name = "idx_file_metadata_owner_id", columnList = "ownerId"),
-    @Index(name = "idx_file_metadata_created_at", columnList = "createdAt")
-})
-@Data
+@Document(collection = "file_metadata")
+@CompoundIndex(name = "idx_roadmapOwnerId_roadmapId", def = "{'roadmapOwnerId': 1, 'roadmapId': 1}")
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,35 +22,34 @@ import java.time.LocalDateTime;
 public class FileMetadata {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.UUID)
   String id;
 
-  @Column(nullable = false)
   String name;
 
-  @Column(name = "original_name", nullable = false, length = 500)
   String originalName;
 
-  @Column(name = "content_type", nullable = false)
   String contentType;
 
-  @Column(nullable = false)
   Long size;
 
-  @Column(name = "md5_checksum", nullable = false, length = 32)
   String md5Checksum;
 
-  @Column(name = "storage_path", nullable = false, length = 500)
   String storagePath;
 
-  @Column(name = "owner_id", nullable = false)
+  @Indexed
   String ownerId;
 
-  @CreationTimestamp
-  @Column(name = "created_at", nullable = false, updatable = false)
+  @Indexed
+  String roadmapId;
+
+  @Indexed
+  String roadmapOwnerId;
+
+  String roadmapAssetType;
+
+  @CreatedDate
   LocalDateTime createdAt;
 
-  @UpdateTimestamp
-  @Column(name = "updated_at", nullable = false)
+  @LastModifiedDate
   LocalDateTime updatedAt;
 }

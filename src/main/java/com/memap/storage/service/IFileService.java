@@ -3,6 +3,8 @@ package com.memap.storage.service;
 import com.memap.storage.dto.FileInfoResponse;
 import com.memap.storage.dto.FileUploadResponse;
 import com.memap.storage.entity.FileMetadata;
+import com.memap.storage.model.RoadmapStorageUsageItem;
+import com.memap.storage.model.RoadmapStorageUsageSummary;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +20,32 @@ public interface IFileService {
    * @return upload response with file details
    */
   FileUploadResponse upload(MultipartFile file, String customName);
+
+  /**
+   * Upload a file with optional roadmap context.
+   * When roadmapId is provided the roadmap's existence and the caller's access
+   * are validated via gRPC before storing the file.
+   *
+   * @param file             the file to upload
+   * @param customName       optional custom name for the file
+   * @param roadmapId        optional roadmap identifier
+   * @param roadmapAssetType optional roadmap asset type
+   * @return upload response with file details
+   */
+  FileUploadResponse upload(MultipartFile file, String customName, String roadmapId, String roadmapAssetType);
+
+  /**
+   * Upload a file scoped to a specific roadmap.
+   * Validates roadmap existence and caller's access via gRPC.
+   *
+   * @param file             the file to upload
+   * @param customName       optional custom display name
+   * @param roadmapId        the roadmap the file belongs to
+   * @param roadmapAssetType the asset type within the roadmap
+   * @return upload response with file details
+   */
+  FileUploadResponse uploadForRoadmap(MultipartFile file, String customName,
+      String roadmapId, String roadmapAssetType);
 
   /**
    * Download a file by its ID.
@@ -56,4 +84,37 @@ public interface IFileService {
    * @param fileId the file ID
    */
   void delete(String fileId);
+
+  /**
+   * Get aggregate storage usage summary across all roadmaps owned by the given
+   * user.
+   *
+   * @param roadmapOwnerId the ID of the roadmap owner
+   * @return aggregate summary (total bytes, total files, roadmap count)
+   */
+  RoadmapStorageUsageSummary getRoadmapStorageUsageSummary(String roadmapOwnerId);
+
+  /**
+   * Get per-roadmap storage usage breakdown for the given roadmap owner.
+   *
+   * @param roadmapOwnerId the ID of the roadmap owner
+   * @return list of per-roadmap usage items ordered by last-upload date
+   *         descending
+   */
+  List<RoadmapStorageUsageItem> getRoadmapStorageUsageItems(String roadmapOwnerId);
+
+  /**
+   * Get aggregate storage usage summary for the authenticated user's roadmaps.
+   *
+   * @return aggregate summary (total bytes, total files, roadmap count)
+   */
+  RoadmapStorageUsageSummary getMyRoadmapStorageUsageSummary();
+
+  /**
+   * Get per-roadmap storage usage breakdown for the authenticated user's
+   * roadmaps.
+   *
+   * @return list of per-roadmap usage items ordered by total bytes descending
+   */
+  List<RoadmapStorageUsageItem> getMyRoadmapStorageUsageItems();
 }

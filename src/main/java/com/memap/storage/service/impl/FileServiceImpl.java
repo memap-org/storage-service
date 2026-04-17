@@ -1,11 +1,15 @@
 package com.memap.storage.service.impl;
 
+import com.memap.grpc.roadmap.ValidateRoadmapStorageContextResponse;
 import com.memap.storage.config.StorageConfig;
 import com.memap.storage.dto.FileInfoResponse;
 import com.memap.storage.dto.FileUploadResponse;
 import com.memap.storage.entity.FileMetadata;
 import com.memap.storage.exception.AppException;
 import com.memap.storage.exception.ErrorCode;
+import com.memap.storage.grpc.client.RoadmapGrpcClient;
+import com.memap.storage.model.RoadmapStorageUsageItem;
+import com.memap.storage.model.RoadmapStorageUsageSummary;
 import com.memap.storage.repository.FileMetadataRepository;
 import com.memap.storage.service.IFileService;
 import com.memap.storage.storage.IStorageBackend;
@@ -18,7 +22,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,51 +37,71 @@ public class FileServiceImpl implements IFileService {
   FileMetadataRepository fileMetadataRepository;
   IStorageBackend storageBackend;
   StorageConfig storageConfig;
+  RoadmapGrpcClient roadmapGrpcClient;
 
   @Override
-  @Transactional
   public FileUploadResponse upload(MultipartFile file, String customName) {
+    return upload(file, customName, null, null);
+  }
+
+  @Override
+  public FileUploadResponse upload(MultipartFile file, String customName, String roadmapId, String roadmapAssetType) {
     if (file.isEmpty()) {
       throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
     }
 
     String currentUserId = getCurrentUserId();
+    String normalizedRoadmapId = StringUtils.hasText(roadmapId) ? roadmapId : null;
+    String normalizedRoadmapAssetType = StringUtils.hasText(roadmapAssetType) ? roadmapAssetType : null;
 
-    // Determine original name
+    // Validate roadmap context via gRPC when a roadmapId is provided
+    String roadmapOwnerId = null;
+    if (normalizedRoadmapId != null) {
+      ValidateRoadmapStorageContextResponse grpcResponse = roadmapGrpcClient
+          .validateRoadmapStorageContext(normalizedRoadmapId, currentUserId);
+
+      if (!grpcResponse.getFound()) {
+        throw new AppException(ErrorCode.ROADMAP_NOT_FOUND);
+      }
+      if (!grpcResponse.getAllowed()) {
+        throw new AppException(ErrorCode.ROADMAP_ACCESS_DENIED);
+      }
+      roadmapOwnerId = StringUtils.hasText(grpcResponse.getRoadmapOwnerId())
+          ? grpcResponse.getRoadmapOwnerId()
+          : null;
+    }
+
     String originalName = StringUtils.hasText(customName)
         ? customName
         : (file.getOriginalFilename() != null ? file.getOriginalFilename() : "unknown");
 
-    // Compute MD5 checksum
     String md5Checksum;
     try {
       md5Checksum = ChecksumUtil.computeMd5(file.getInputStream());
     } catch (IOException e) {
-      log.error("Failed to compute MD5 checksum", e);
       throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
     }
 
-    // Store file to filesystem
     String storagePath = storageBackend.store(file);
-
-    // Extract stored filename from path
     String storedFilename = storagePath.substring(storagePath.lastIndexOf('/') + 1);
 
-    // Create metadata entity
-    FileMetadata metadata = FileMetadata.builder()
-        .name(storedFilename)
-        .originalName(originalName)
-        .contentType(file.getContentType() != null ? file.getContentType() : "application/octet-stream")
-        .size(file.getSize())
-        .md5Checksum(md5Checksum)
-        .storagePath(storagePath)
-        .ownerId(currentUserId)
-        .build();
+    FileMetadata metadata = new FileMetadata();
+    metadata.setName(storedFilename);
+    metadata.setOriginalName(originalName);
+    metadata.setContentType(file.getContentType() != null ? file.getContentType() : "application/octet-stream");
+    metadata.setSize(file.getSize());
+    metadata.setMd5Checksum(md5Checksum);
+    metadata.setStoragePath(storagePath);
+    metadata.setOwnerId(currentUserId);
+    metadata.setRoadmapId(normalizedRoadmapId);
+    metadata.setRoadmapOwnerId(roadmapOwnerId);
+    metadata.setRoadmapAssetType(normalizedRoadmapAssetType);
 
     FileMetadata saved = fileMetadataRepository.save(metadata);
 
     String downloadUrl = buildDownloadUrl(saved.getId());
-
+    log.info("File uploaded: {} (original name: {}) by user: {}. Download URL: {}",
+        saved.getId(), saved.getOriginalName(), currentUserId, downloadUrl);
     return FileUploadResponse.builder()
         .fileId(saved.getId())
         .name(saved.getName())
@@ -89,6 +112,12 @@ public class FileServiceImpl implements IFileService {
         .downloadUrl(downloadUrl)
         .createdAt(saved.getCreatedAt())
         .build();
+  }
+
+  @Override
+  public FileUploadResponse uploadForRoadmap(MultipartFile file, String customName,
+      String roadmapId, String roadmapAssetType) {
+    return upload(file, customName, roadmapId, roadmapAssetType);
   }
 
   @Override
@@ -119,7 +148,6 @@ public class FileServiceImpl implements IFileService {
   }
 
   @Override
-  @Transactional
   public void delete(String fileId) {
     FileMetadata metadata = getFileMetadata(fileId);
 
@@ -137,6 +165,30 @@ public class FileServiceImpl implements IFileService {
     fileMetadataRepository.delete(metadata);
 
     log.info("Deleted file: {} by user: {}", fileId, currentUserId);
+  }
+
+  @Override
+  public RoadmapStorageUsageSummary getRoadmapStorageUsageSummary(String roadmapOwnerId) {
+    RoadmapStorageUsageSummary summary = fileMetadataRepository.getRoadmapStorageUsageSummary(roadmapOwnerId);
+    return summary != null ? summary : RoadmapStorageUsageSummary.empty();
+  }
+
+  @Override
+  public List<RoadmapStorageUsageItem> getRoadmapStorageUsageItems(String roadmapOwnerId) {
+    return fileMetadataRepository.findRoadmapStorageUsageItems(roadmapOwnerId);
+  }
+
+  @Override
+  public RoadmapStorageUsageSummary getMyRoadmapStorageUsageSummary() {
+    String currentUserId = getCurrentUserId();
+    RoadmapStorageUsageSummary summary = fileMetadataRepository.getRoadmapStorageUsageSummary(currentUserId);
+    return summary != null ? summary : RoadmapStorageUsageSummary.empty();
+  }
+
+  @Override
+  public List<RoadmapStorageUsageItem> getMyRoadmapStorageUsageItems() {
+    String currentUserId = getCurrentUserId();
+    return fileMetadataRepository.findRoadmapStorageUsageItems(currentUserId);
   }
 
   private String getCurrentUserId() {

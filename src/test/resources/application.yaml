@@ -1,0 +1,29 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test_storage
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://localhost/realms/test
+          jwk-set-uri: https://localhost/realms/test/protocol/openid-connect/certs
+
+server:
+  port: 0
+  servlet:
+    context-path: /storage
+
+app:
+  storage:
+    backend: local
+    download-url-prefix: http://localhost:0/storage
+    local:
+      base-dir: /tmp/test-storage
+
+grpc:
+  client:
+    roadmap-service:
+      address: static://localhost:9999
+      negotiationType: PLAINTEXT
+      deadline: 5000

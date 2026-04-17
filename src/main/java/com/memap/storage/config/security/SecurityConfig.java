@@ -1,9 +1,6 @@
 package com.memap.storage.config.security;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -12,10 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
-import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -42,9 +36,6 @@ public class SecurityConfig {
   private final CustomAuthoritiesConverter customAuthoritiesConverter;
   private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-  @Value("${spring.security.oauth2.resourceserver.jwt.jwk-set-uri}")
-  private String jwkSetUri;
-
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
@@ -56,7 +47,6 @@ public class SecurityConfig {
             .anyRequest().authenticated())
         .oauth2ResourceServer(oauth2 -> oauth2
             .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-            .bearerTokenResolver(bearerTokenResolver())
             .authenticationEntryPoint(jwtAuthenticationEntryPoint))
         .exceptionHandling(exception -> exception
             .authenticationEntryPoint(jwtAuthenticationEntryPoint));
@@ -66,7 +56,7 @@ public class SecurityConfig {
 
   @Bean
   public JwtDecoder jwtDecoder() {
-    return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+    return new TrustedGatewayJwtDecoder();
   }
 
   @Bean
@@ -77,41 +67,10 @@ public class SecurityConfig {
   }
 
   @Bean
-  public BearerTokenResolver bearerTokenResolver() {
-    DefaultBearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
-
-    return (HttpServletRequest request) -> {
-      String token = defaultResolver.resolve(request);
-      if (token != null) {
-        return token;
-      }
-
-      String bearHeader = request.getHeader("Bearer ");
-      if (bearHeader != null && !bearHeader.isBlank()) {
-        return bearHeader.trim();
-      }
-
-      Cookie[] cookies = request.getCookies();
-      if (cookies != null) {
-        for (Cookie cookie : cookies) {
-          if ("access_token".equals(cookie.getName()) || "token".equals(cookie.getName())) {
-            return cookie.getValue();
-          }
-        }
-      }
-
-      return null;
-    };
-  }
-
-  @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList(
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5500",
-        "https://roadmap.memap.id.vn"));
+    // Allow all origins — CORS is enforced at the API Gateway level
+    configuration.setAllowedOriginPatterns(List.of("*"));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setAllowCredentials(true);

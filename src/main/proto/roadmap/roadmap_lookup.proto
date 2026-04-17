@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package roadmap;
+
+option java_multiple_files = true;
+option java_package = "com.memap.grpc.roadmap";
+option java_outer_classname = "RoadmapLookupProto";
+
+// Service for lightweight roadmap lookups
+service RoadmapLookupService {
+  // Get roadmap name by ID (single)
+  rpc GetRoadmapName(GetRoadmapNameRequest) returns (RoadmapNameResponse);
+
+  // Get multiple roadmap names by IDs (batch)
+  rpc GetRoadmapNames(GetRoadmapNamesRequest) returns (RoadmapNamesResponse);
+
+  // Get roadmap IDs where a user has access permissions
+  rpc GetRoadmapIdsByUser(GetRoadmapIdsByUserRequest) returns (GetRoadmapIdsByUserResponse);
+
+  // Validate whether a user can attribute storage usage to a roadmap
+  rpc ValidateRoadmapStorageContext(ValidateRoadmapStorageContextRequest) returns (ValidateRoadmapStorageContextResponse);
+}
+
+// Request message for single roadmap name lookup
+message GetRoadmapNameRequest {
+  string roadmap_id = 1;
+}
+
+// Response message for single roadmap name lookup
+message RoadmapNameResponse {
+  string roadmap_id = 1;
+  string name = 2;
+  bool found = 3;
+}
+
+// Request message for batch roadmap names lookup
+message GetRoadmapNamesRequest {
+  repeated string roadmap_ids = 1;
+}
+
+// Response message for batch roadmap names lookup
+message RoadmapNamesResponse {
+  map<string, string> roadmap_names = 1;
+}
+
+// Request message for getting roadmap IDs by user
+message GetRoadmapIdsByUserRequest {
+  string user_id = 1;
+}
+
+// Response message for getting roadmap IDs by user
+message GetRoadmapIdsByUserResponse {
+  repeated string roadmap_ids = 1;
+}
+
+// Request message for validating roadmap-scoped storage attribution
+message ValidateRoadmapStorageContextRequest {
+  string roadmap_id = 1;
+  string user_id = 2;
+}
+
+// Response message for validating roadmap-scoped storage attribution
+message ValidateRoadmapStorageContextResponse {
+  string roadmap_id = 1;
+  string user_id = 2;
+  bool found = 3;
+  bool allowed = 4;
+  string roadmap_owner_id = 5;
+}

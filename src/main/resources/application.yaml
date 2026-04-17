@@ -1,19 +1,9 @@
 spring:
   application:
     name: storage-service
-  datasource:
-    url: ${STORAGE_DB_URL}
-    username: ${STORAGE_DB_USERNAME}
-    password: ${STORAGE_DB_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: none
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
-          jwk-set-uri: ${KEYCLOAK_ISSUER_URI}/protocol/openid-connect/certs
+  data:
+    mongodb:
+      uri: ${STORAGE_MONGO_URI:mongodb://localhost:27017/storage_service}
   servlet:
     multipart:
       max-file-size: 1024MB
@@ -35,12 +25,23 @@ open:
     title: Storage service
     version: 1.0.0
     description: Storage service API
-    serverUrl: http://localhost:${server.port}${server.servlet.context-path}
+    serverUrl: ${STORAGE_BASE_URL:http://localhost:${server.port}${server.servlet.context-path}}
     serverName: storage service
 
 app:
   storage:
     backend: local
-    download-url-prefix: http://localhost:${server.port}${server.servlet.context-path}
+    download-url-prefix: ${STORAGE_BASE_URL:http://localhost:${server.port}${server.servlet.context-path}}
     local:
       base-dir: /data/storage/files
+
+grpc:
+  server:
+    port: ${STORAGE_GRPC_PORT:9088}
+    security:
+      enabled: false
+  client:
+    roadmap-service:
+      address: ${ROADMAP_GRPC_ADDRESS:static://localhost:9083}
+      negotiationType: PLAINTEXT
+      deadline: ${ROADMAP_GRPC_DEADLINE_MS:5000}
