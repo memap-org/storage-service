@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "app.storage.backend", havingValue = "local")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
