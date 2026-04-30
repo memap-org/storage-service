@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -189,6 +191,17 @@ public class FileServiceImpl implements IFileService {
   public List<RoadmapStorageUsageItem> getMyRoadmapStorageUsageItems() {
     String currentUserId = getCurrentUserId();
     return fileMetadataRepository.findRoadmapStorageUsageItems(currentUserId);
+  }
+
+  @Override
+  public Page<FileInfoResponse> getStorageByRoadmapId(String roadmapId, String search, Pageable pageable) {
+      Page<FileMetadata> fileMetadata;
+      if(search == null || search.trim().isEmpty() ) {
+          fileMetadata = fileMetadataRepository.findByRoadmapId(roadmapId, pageable);
+      } else
+          fileMetadata = fileMetadataRepository.findByRoadmapIdAndOriginalNameContainingIgnoreCase(roadmapId, search, pageable);
+
+    return fileMetadata.map(this::mapToFileInfoResponse);
   }
 
   private String getCurrentUserId() {

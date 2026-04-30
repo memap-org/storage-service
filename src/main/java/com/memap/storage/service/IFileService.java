@@ -6,6 +6,8 @@ import com.memap.storage.entity.FileMetadata;
 import com.memap.storage.model.RoadmapStorageUsageItem;
 import com.memap.storage.model.RoadmapStorageUsageSummary;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -117,4 +119,6 @@ public interface IFileService {
    * @return list of per-roadmap usage items ordered by total bytes descending
    */
   List<RoadmapStorageUsageItem> getMyRoadmapStorageUsageItems();
+
+  Page<FileInfoResponse> getStorageByRoadmapId(String roadmapId, String search, Pageable pageable);
 }
