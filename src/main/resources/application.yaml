@@ -25,15 +25,20 @@ open:
     title: Storage service
     version: 1.0.0
     description: Storage service API
-    serverUrl: ${STORAGE_BASE_URL:http://localhost:${server.port}${server.servlet.context-path}}
+    serverUrl: ${GATEWAY_URL:http://localhost:8090}/storage
     serverName: storage service
 
 app:
   storage:
-    backend: local
+    backend: minio
     download-url-prefix: ${STORAGE_BASE_URL:http://localhost:${server.port}${server.servlet.context-path}}
     local:
       base-dir: /data/storage/files
+    minio:
+      endpoint: ${STORAGE_MINIO_ENDPOINT:http://localhost:9000}
+      access-key: ${STORAGE_MINIO_ACCESS_KEY:minioadmin}
+      secret-key: ${STORAGE_MINIO_SECRET_KEY:minioadmin}
+      bucket-name: ${STORAGE_MINIO_BUCKET:memap-files}
 
 grpc:
   server:

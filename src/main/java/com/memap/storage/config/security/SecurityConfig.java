@@ -24,13 +24,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
   private static final String[] PUBLIC_ENDPOINTS = {
-      "/api/v1/auth/public",
       "/actuator/**",
+      "/v3/api-docs",
       "/v3/api-docs/**",
+      "/api-docs",
+      "/api-docs/**",
       "/swagger-ui/**",
       "/swagger-ui.html",
-      "/api-docs/**",
-      "/file/*/access" // Public file access (Phase 1)
+      "/swagger-ui/index.html",
+      "/file/*/access"
   };
 
   private final CustomAuthoritiesConverter customAuthoritiesConverter;

@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 public class StorageConfig {
 
   Local local = new Local();
+  Minio minio = new Minio();
   String downloadUrlPrefix;
 
   @Getter
@@ -22,5 +23,15 @@ public class StorageConfig {
   @FieldDefaults(level = AccessLevel.PRIVATE)
   public static class Local {
     String baseDir = "/data/storage/files";
+  }
+
+  @Getter
+  @Setter
+  @FieldDefaults(level = AccessLevel.PRIVATE)
+  public static class Minio {
+    String endpoint;
+    String accessKey;
+    String secretKey;
+    String bucketName;
   }
 }
