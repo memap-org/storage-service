@@ -6,7 +6,7 @@ import com.memap.grpc.storage.GetFileInfoRequest;
 import com.memap.grpc.storage.GetFileInfoResponse;
 import com.memap.grpc.storage.GetFileInfosRequest;
 import com.memap.grpc.storage.GetFileInfosResponse;
-import com.memap.storage.dto.FileInfoResponse;
+import com.memap.storage.dto.response.FileInfoResponse;
 import com.memap.storage.exception.AppException;
 import com.memap.storage.service.IFileService;
 import io.grpc.stub.StreamObserver;

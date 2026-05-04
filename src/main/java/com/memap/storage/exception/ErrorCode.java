@@ -33,7 +33,11 @@ public enum ErrorCode {
   FILE_TOO_LARGE(4202, "File size exceeds the maximum limit", HttpStatus.BAD_REQUEST),
   INVALID_FILE_TYPE(4203, "Invalid file type", HttpStatus.BAD_REQUEST),
   STORAGE_QUOTA_EXCEEDED(4204, "Storage quota exceeded", HttpStatus.BAD_REQUEST),
-  STORAGE_ERROR(4205, "Storage error", HttpStatus.INTERNAL_SERVER_ERROR);
+  STORAGE_ERROR(4205, "Storage error", HttpStatus.INTERNAL_SERVER_ERROR),
+
+  // Roadmap Storage error(4300-)
+  ROADMAP_STORAGE_NOT_FOUND(4300, "Roadmap storage not found", HttpStatus.NOT_FOUND),
+  STORAGE_LIMIT_EXCEEDED(4301, "Roadmap storage limit exceeded", HttpStatus.BAD_REQUEST);
 
   ErrorCode(int code, String message, HttpStatusCode statusCode) {
     this.code = code;

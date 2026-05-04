@@ -1,23 +1,25 @@
-package com.memap.storage.dto;
+package com.memap.storage.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Schema(description = "File metadata information")
-public class FileInfoResponse {
+@Schema(description = "Response returned after successful file upload")
+public class FileUploadResponse {
 
   @Schema(description = "Unique file identifier (UUID)", example = "550e8400-e29b-41d4-a716-446655440000")
   String fileId;

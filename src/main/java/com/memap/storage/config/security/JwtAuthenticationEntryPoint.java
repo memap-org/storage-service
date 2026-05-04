@@ -1,6 +1,6 @@
 package com.memap.storage.config.security;
 
-import com.memap.storage.dto.ApiResponse;
+import com.memap.storage.dto.response.ApiResponse;
 import com.memap.storage.exception.ErrorCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

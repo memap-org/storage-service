@@ -1,7 +1,7 @@
 package com.memap.storage.service;
 
-import com.memap.storage.dto.FileInfoResponse;
-import com.memap.storage.dto.FileUploadResponse;
+import com.memap.storage.dto.response.FileInfoResponse;
+import com.memap.storage.dto.response.FileUploadResponse;
 import com.memap.storage.entity.FileMetadata;
 import com.memap.storage.model.RoadmapStorageUsageItem;
 import com.memap.storage.model.RoadmapStorageUsageSummary;

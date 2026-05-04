@@ -10,12 +10,13 @@ import static org.mockito.Mockito.when;
 
 import com.memap.grpc.roadmap.ValidateRoadmapStorageContextResponse;
 import com.memap.storage.config.StorageConfig;
-import com.memap.storage.dto.FileUploadResponse;
+import com.memap.storage.dto.response.FileUploadResponse;
 import com.memap.storage.entity.FileMetadata;
 import com.memap.storage.exception.AppException;
 import com.memap.storage.exception.ErrorCode;
 import com.memap.storage.grpc.client.RoadmapGrpcClient;
 import com.memap.storage.repository.FileMetadataRepository;
+import com.memap.storage.service.RoadmapStorageService;
 import com.memap.storage.storage.IStorageBackend;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -37,6 +38,9 @@ class FileServiceImplRoadmapUploadTest {
   private FileMetadataRepository fileMetadataRepository;
 
   @Mock
+  RoadmapStorageService roadmapStorageService;
+
+  @Mock
   private IStorageBackend storageBackend;
 
   @Mock
@@ -54,7 +58,7 @@ class FileServiceImplRoadmapUploadTest {
 
   @BeforeEach
   void setUp() {
-    fileService = new FileServiceImpl(fileMetadataRepository, storageBackend, storageConfig, roadmapGrpcClient);
+    fileService = new FileServiceImpl(fileMetadataRepository, storageBackend, storageConfig, roadmapGrpcClient, roadmapStorageService);
     setUpAuthentication(USER_ID);
   }
 

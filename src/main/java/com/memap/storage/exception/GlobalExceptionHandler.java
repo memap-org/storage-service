@@ -1,7 +1,7 @@
 package com.memap.storage.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.memap.storage.dto.ApiResponse;
+import com.memap.storage.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;

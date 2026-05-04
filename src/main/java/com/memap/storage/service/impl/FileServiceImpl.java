@@ -2,16 +2,19 @@ package com.memap.storage.service.impl;
 
 import com.memap.grpc.roadmap.ValidateRoadmapStorageContextResponse;
 import com.memap.storage.config.StorageConfig;
-import com.memap.storage.dto.FileInfoResponse;
-import com.memap.storage.dto.FileUploadResponse;
+import com.memap.storage.dto.response.FileInfoResponse;
+import com.memap.storage.dto.response.FileUploadResponse;
 import com.memap.storage.entity.FileMetadata;
+import com.memap.storage.entity.RoadmapStorage;
 import com.memap.storage.exception.AppException;
 import com.memap.storage.exception.ErrorCode;
 import com.memap.storage.grpc.client.RoadmapGrpcClient;
 import com.memap.storage.model.RoadmapStorageUsageItem;
 import com.memap.storage.model.RoadmapStorageUsageSummary;
 import com.memap.storage.repository.FileMetadataRepository;
+import com.memap.storage.repository.RoadmapStorageRepository;
 import com.memap.storage.service.IFileService;
+import com.memap.storage.service.RoadmapStorageService;
 import com.memap.storage.storage.IStorageBackend;
 import com.memap.storage.util.ChecksumUtil;
 import lombok.AccessLevel;
@@ -29,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +44,7 @@ public class FileServiceImpl implements IFileService {
   IStorageBackend storageBackend;
   StorageConfig storageConfig;
   RoadmapGrpcClient roadmapGrpcClient;
+  RoadmapStorageService roadmapStorageService;
 
   @Override
   public FileUploadResponse upload(MultipartFile file, String customName) {
@@ -71,6 +76,10 @@ public class FileServiceImpl implements IFileService {
       roadmapOwnerId = StringUtils.hasText(grpcResponse.getRoadmapOwnerId())
           ? grpcResponse.getRoadmapOwnerId()
           : null;
+      if(roadmapOwnerId != null) {
+        // update roadmap storage
+        roadmapStorageService.uploadRoadmapFile(file, normalizedRoadmapId, roadmapOwnerId);
+      }
     }
 
     String originalName = StringUtils.hasText(customName)
@@ -104,6 +113,7 @@ public class FileServiceImpl implements IFileService {
     String downloadUrl = buildDownloadUrl(saved.getId());
     log.info("File uploaded: {} (original name: {}) by user: {}. Download URL: {}",
         saved.getId(), saved.getOriginalName(), currentUserId, downloadUrl);
+
     return FileUploadResponse.builder()
         .fileId(saved.getId())
         .name(saved.getName())
@@ -165,6 +175,13 @@ public class FileServiceImpl implements IFileService {
 
     // Delete metadata from database
     fileMetadataRepository.delete(metadata);
+
+    // update roadmap storage
+    Long size = metadata.getSize();
+    String roadmapId = metadata.getRoadmapId();
+    if(roadmapId != null) {
+      roadmapStorageService.deleteRoadmapFile(size, roadmapId);
+    }
 
     log.info("Deleted file: {} by user: {}", fileId, currentUserId);
   }

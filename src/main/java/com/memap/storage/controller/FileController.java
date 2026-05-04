@@ -1,8 +1,8 @@
 package com.memap.storage.controller;
 
-import com.memap.storage.dto.ApiResponse;
-import com.memap.storage.dto.FileInfoResponse;
-import com.memap.storage.dto.FileUploadResponse;
+import com.memap.storage.dto.response.ApiResponse;
+import com.memap.storage.dto.response.FileInfoResponse;
+import com.memap.storage.dto.response.FileUploadResponse;
 import com.memap.storage.entity.FileMetadata;
 import com.memap.storage.model.RoadmapStorageUsageItem;
 import com.memap.storage.model.RoadmapStorageUsageSummary;
