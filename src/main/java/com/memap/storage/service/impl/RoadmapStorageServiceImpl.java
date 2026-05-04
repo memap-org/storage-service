@@ -29,6 +29,11 @@ public class RoadmapStorageServiceImpl implements RoadmapStorageService {
     }
 
     @Override
+    public List<RoadmapStorage> findAllByOwnerId(String ownerId) {
+        return roadmapStorageRepository.findAllByOwnerId(ownerId);
+    }
+
+    @Override
     public void updateStorageQuota(Long maxStorageCapacity, String ownerId) {
         List<RoadmapStorage> storages = roadmapStorageRepository.findAllByOwnerId(ownerId);
         storages.forEach(storage -> storage.setMaxStorage(maxStorageCapacity));

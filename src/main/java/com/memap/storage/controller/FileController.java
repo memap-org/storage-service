@@ -212,6 +212,20 @@ public class FileController {
                 .build();
     }
 
+    @GetMapping("/my-roadmap-storage/{roadmapId}/files")
+    @Operation(summary = "List files for a specific roadmap", description = "Returns all files uploaded by the authenticated user for the given roadmap, ordered by creation date (newest first).")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Files retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthenticated")
+    })
+    public ApiResponse<List<FileInfoResponse>> getMyFilesByRoadmap(
+            @Parameter(description = "Roadmap ID", required = true) @PathVariable String roadmapId) {
+        List<FileInfoResponse> files = fileService.getMyFilesByRoadmapId(roadmapId);
+        return ApiResponse.<List<FileInfoResponse>>builder()
+                .result(files)
+                .build();
+    }
+
     @GetMapping("/roadmap-storage/{roadmapOwnerId}/items")
     @Operation(summary = "List per-roadmap storage usage", description = "Returns a per-roadmap breakdown of storage usage (bytes, file count, last upload date) for all roadmaps owned by the specified user, ordered by last-upload date descending.")
     @ApiResponses(value = {

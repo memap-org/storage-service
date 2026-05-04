@@ -33,6 +33,8 @@ public interface FileMetadataRepository extends MongoRepository<FileMetadata, St
   })
   List<RoadmapStorageUsageItem> findRoadmapStorageUsageItems(String roadmapOwnerId);
 
+  List<FileMetadata> findByOwnerIdAndRoadmapIdOrderByCreatedAtDesc(String ownerId, String roadmapId);
+
   Page<FileMetadata> findByRoadmapIdAndOriginalNameContainingIgnoreCase(
           String roadmapId,
           String name,

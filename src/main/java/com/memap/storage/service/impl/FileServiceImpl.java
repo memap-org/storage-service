@@ -187,6 +187,22 @@ public class FileServiceImpl implements IFileService {
   }
 
   @Override
+  public void deleteInternal(String fileId) {
+    FileMetadata metadata = getFileMetadata(fileId);
+
+    storageBackend.delete(metadata.getStoragePath());
+    fileMetadataRepository.delete(metadata);
+
+    Long size = metadata.getSize();
+    String roadmapId = metadata.getRoadmapId();
+    if (roadmapId != null) {
+      roadmapStorageService.deleteRoadmapFile(size, roadmapId);
+    }
+
+    log.info("Deleted file: {} via internal API", fileId);
+  }
+
+  @Override
   public RoadmapStorageUsageSummary getRoadmapStorageUsageSummary(String roadmapOwnerId) {
     RoadmapStorageUsageSummary summary = fileMetadataRepository.getRoadmapStorageUsageSummary(roadmapOwnerId);
     return summary != null ? summary : RoadmapStorageUsageSummary.empty();
@@ -207,7 +223,19 @@ public class FileServiceImpl implements IFileService {
   @Override
   public List<RoadmapStorageUsageItem> getMyRoadmapStorageUsageItems() {
     String currentUserId = getCurrentUserId();
-    return fileMetadataRepository.findRoadmapStorageUsageItems(currentUserId);
+    List<RoadmapStorageUsageItem> items = fileMetadataRepository.findRoadmapStorageUsageItems(currentUserId);
+
+    List<RoadmapStorage> storages = roadmapStorageService.findAllByOwnerId(currentUserId);
+    java.util.Map<String, Long> maxStorageMap = storages.stream()
+        .collect(java.util.stream.Collectors.toMap(RoadmapStorage::getRoadmapId, RoadmapStorage::getMaxStorage));
+
+    for (RoadmapStorageUsageItem item : items) {
+      if (maxStorageMap.containsKey(item.getRoadmapId())) {
+        item.setMaxStorage(maxStorageMap.get(item.getRoadmapId()));
+      }
+    }
+
+    return items;
   }
 
   @Override
@@ -219,6 +247,16 @@ public class FileServiceImpl implements IFileService {
           fileMetadata = fileMetadataRepository.findByRoadmapIdAndOriginalNameContainingIgnoreCase(roadmapId, search, pageable);
 
     return fileMetadata.map(this::mapToFileInfoResponse);
+  }
+
+  @Override
+  public List<FileInfoResponse> getMyFilesByRoadmapId(String roadmapId) {
+    String currentUserId = getCurrentUserId();
+    return fileMetadataRepository
+        .findByOwnerIdAndRoadmapIdOrderByCreatedAtDesc(currentUserId, roadmapId)
+        .stream()
+        .map(this::mapToFileInfoResponse)
+        .toList();
   }
 
   private String getCurrentUserId() {

@@ -30,6 +30,7 @@ open:
 
 app:
   storage:
+    internal-api-key: ${STORAGE_INTERNAL_API_KEY:changeme-local-dev-only}
     backend: minio
     download-url-prefix: ${STORAGE_BASE_URL:http://localhost:${server.port}${server.servlet.context-path}}
     local:

@@ -3,6 +3,7 @@ package com.memap.storage.model;
 import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
@@ -14,6 +15,9 @@ public class RoadmapStorageUsageItem {
   private final long totalBytes;
   private final long fileCount;
   private final LocalDateTime lastUploadedAt;
+
+  @Setter
+  private Long maxStorage;
 
   public RoadmapStorageUsageItem(String roadmapId, Long totalBytes, Long fileCount,
       LocalDateTime lastUploadedAt) {

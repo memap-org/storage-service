@@ -88,6 +88,13 @@ public interface IFileService {
   void delete(String fileId);
 
   /**
+   * Delete a file by ID without owner check. For internal service-to-service calls only.
+   *
+   * @param fileId the file ID
+   */
+  void deleteInternal(String fileId);
+
+  /**
    * Get aggregate storage usage summary across all roadmaps owned by the given
    * user.
    *
@@ -121,4 +128,12 @@ public interface IFileService {
   List<RoadmapStorageUsageItem> getMyRoadmapStorageUsageItems();
 
   Page<FileInfoResponse> getStorageByRoadmapId(String roadmapId, String search, Pageable pageable);
+
+  /**
+   * Get all files uploaded by the authenticated user for a specific roadmap.
+   *
+   * @param roadmapId the roadmap identifier
+   * @return list of file info responses ordered by creation date (newest first)
+   */
+  List<FileInfoResponse> getMyFilesByRoadmapId(String roadmapId);
 }
