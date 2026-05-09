@@ -1,6 +1,13 @@
 spring:
   application:
     name: storage-service
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_URL:http://localhost:8095}
+        instance:
+          service-url: ${STORAGE_SERVICE_URL:http://localhost:8088/storage}
+          name: storage-service
   data:
     mongodb:
       uri: ${STORAGE_MONGO_URI:mongodb://localhost:27017/storage_service}
@@ -40,6 +47,15 @@ app:
       access-key: ${STORAGE_MINIO_ACCESS_KEY:minioadmin}
       secret-key: ${STORAGE_MINIO_SECRET_KEY:minioadmin}
       bucket-name: ${STORAGE_MINIO_BUCKET:memap-files}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env,loggers
+  endpoint:
+    health:
+      show-details: always
 
 grpc:
   server:
