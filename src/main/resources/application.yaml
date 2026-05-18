@@ -8,6 +8,11 @@ spring:
         instance:
           service-url: ${STORAGE_SERVICE_URL:http://localhost:8088/storage}
           name: storage-service
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:admin}
+    password: ${RABBITMQ_PASSWORD:admin}
   data:
     mongodb:
       uri: ${STORAGE_MONGO_URI:mongodb://localhost:27017/storage_service}
@@ -36,6 +41,9 @@ open:
     serverName: storage service
 
 app:
+  payment:
+    base-url: ${PAYMENT_SERVICE_URL:http://localhost:8087/payment}
+    internal-api-key: ${INTERNAL_API_KEY:}
   storage:
     internal-api-key: ${STORAGE_INTERNAL_API_KEY:changeme-local-dev-only}
     backend: minio

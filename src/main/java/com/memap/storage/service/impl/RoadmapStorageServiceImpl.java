@@ -1,5 +1,6 @@
 package com.memap.storage.service.impl;
 
+import com.memap.storage.client.PaymentServiceClient;
 import com.memap.storage.dto.response.RoadmapStorageResponse;
 import com.memap.storage.entity.RoadmapStorage;
 import com.memap.storage.exception.AppException;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoadmapStorageServiceImpl implements RoadmapStorageService {
     RoadmapStorageRepository roadmapStorageRepository;
+    PaymentServiceClient paymentServiceClient;
 
     @Override
     public RoadmapStorage findByRoadmapId(String roadmapId) {
@@ -41,10 +43,12 @@ public class RoadmapStorageServiceImpl implements RoadmapStorageService {
     }
 
     private RoadmapStorage createRoadmapStorage(String roadmapId, String ownerId) {
+        long maxStorage = paymentServiceClient.getMaxStoragePerRoadmap(ownerId);
+        log.info("Creating RoadmapStorage for roadmapId={} ownerId={} maxStorage={}bytes", roadmapId, ownerId, maxStorage);
         RoadmapStorage storage = RoadmapStorage.builder()
                 .ownerId(ownerId)
                 .roadmapId(roadmapId)
-                .maxStorage( 500L * 1024 * 1024) // 500MB
+                .maxStorage(maxStorage)
                 .build();
 
         return roadmapStorageRepository.save(storage);
