@@ -55,3 +55,8 @@ CLAUDE.local.md
 AGENTS.md
 GEMINI.md
 skills-lock.json
+
+# agent prompt files
+.github/prompts/
+.github/chatmodes/
+.github/copilot-instructions.md

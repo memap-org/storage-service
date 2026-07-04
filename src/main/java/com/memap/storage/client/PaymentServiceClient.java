@@ -32,8 +32,8 @@ public class PaymentServiceClient {
                     .retrieve()
                     .body(PlanLimitsResponse.class);
 
-            if (response != null && response.result() != null) {
-                long limit = response.result().maxStoragePerRoadmap();
+            if (response != null && response.data() != null) {
+                long limit = response.data().maxStoragePerRoadmap();
                 return limit > 0 ? limit : FREE_STORAGE_BYTES;
             }
         } catch (Exception e) {
@@ -42,7 +42,7 @@ public class PaymentServiceClient {
         return FREE_STORAGE_BYTES;
     }
 
-    private record PlanLimitsResponse(int code, PlanLimits result) {}
+    private record PlanLimitsResponse(int code, PlanLimits data) {}
 
     private record PlanLimits(int maxRoadmaps, long maxStoragePerRoadmap) {}
 }
